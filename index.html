@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB"
+        crossorigin="anonymous">
+    
+    <style>
+        .login {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+        }
+        .login input[type='text'] {
+            width: 250px;
+            padding: 8px;
+            outline: none;
+            border: 1px solid #2196f3;
+            border-radius: 10px;
+        }
+        .login input[type='text']:focus {
+            box-shadow: 0px 2px 8px 0.3px;
+        }
+        .login input[type='submit'] {
+            width: 70px;
+            padding: 8px;
+            outline: none;
+            border: 1px solid #2196f3;
+            border-radius: 10px;
+            background: #00bcd4;
+        }
+        .login input[type='submit']:hover {
+          background: #2196f3;  
+          box-shadow: 0px 2px 8px 0.3px;
+        }
+        .card-header:first-child {
+    border-radius: calc(.25rem - 1px) calc(.25rem - 1px) 0 0;
+    display: flex;
+}
+        .card-header .float-right {
+                color: chartreuse;
+    /* float: right!important; */
+    margin: .4% 0% 0% 82%;
+        }
+        
+        .list-group-item {
+            margin-bottom: 10px;
+            width: 98%;
+            border-radius: 0px 25px 25px 25px;
+            border: 1px solid;
+        }
+        .list-group-flush .list-group-item {
+    border-right: 0;
+    border-left: 0;
+    border-radius: 0px 26px 26px 26px;
+}
+        .user {
+                color: #c0c0c0;
+        }
+
+
+.bg-info {
+    background-color: #607D8B!important;
+}
+        .typ {
+            float: left;
+    margin: 3px 3px 3px 15px;
+    padding: 2px;
+    color: #c4c3c3db;
+        }
+
+.alert-success {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    padding: -0.25rem 1.25rem;
+    </style>
+</head>
+
+<body>
+    <div  id="app">
+        <div>
+            <div v-if="ready" class="alert alert-success">
+                    <p v-for="item in info">
+  <strong>{{item.name}} {{item.type}}</strong> 
+                </p>
+</div>
+            
+            
+    <form @submit.prevent="setName" v-else>
+        <div class="login">
+                    
+     <input type="text" v-model="name" placeholder="Tapez Votre Nom...">
+    <input type="submit" value="Joindre" >
+                </div>
+            </form>
+        </div>
+            
+        
+        <div class="card bg-info" v-if="ready">
+                <div class="card-header text-white">
+                   <h4 class="name">{{name}}</h4><span style="margin: -5px 5px 0px 5px;color: #67fb63;font-size: 25px;">●</span>
+                    <span class="float-right"> {{online.length}} Online</span>
+                </div>
+            <!--{{connectionCount}} connections,-->
+
+                <ul class="list-group list-group-flush text-right">
+                    <small v-if="typing" class="text-white">
+                        <i class="typ">{{typing}} is typing</i>
+                    </small>
+                    <li class="list-group-item" v-for="message in messages">
+                         <small class="user">({{message.by}})</small>
+                        <span :class="{'float-left':(message.type===1)}">
+                            {{message.message}}
+                           
+                        </span>
+                    </li>
+                </ul>
+
+                <div class="card-body">
+                    <form @submit.prevent="send">
+                        <div class="form-group">
+                            <input type="text" class="form-control" v-model="newmessage" placeholder="Type Here">
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+  
+
+            
+    <!--            
+<div v-if="ready" class="chat">
+                    
+            <div class="info">
+                
+                <h2>chat-P2P</h2>
+                <div class="TN">
+                    
+                <h4 class="name">{{name}}</h4><span style="margin: -5px 5px 0px 5px;color: #67fb63;font-size: 25px;">●</span>
+            
+                <div class="info-cnx">
+                <span> {{online.length}} Online</span>
+                </div>
+                </div>
+                
+            </div>
+    
+            <small v-if="typing">
+                        <i>{{typing}} is typing</i>
+                    </small>
+    
+            
+            <div class="discusion">
+                <ul>
+                    
+                    <li  v-for="message in messages">
+                       
+                        <span :class="{'float-left':(message.type===1)}">
+                            {{message.message}}
+                           <small>{{message.by}} : </small>
+                        </span>
+                    </li>
+                </ul>
+            </div>
+                <!--{{connectionCount}} connections,
+            
+            
+            <div>
+                <form @submit.prevent="send">
+                <div class="msg">
+                <input type="text"  v-model="newmessage" placeholder="Type your msg Here">
+                </div>
+                </form>
+             
+            </div>
+            
+            
+            
+    </div>
+               
+               
+            </div>
+      
+
+-->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>
+    <script>
+        var socket = io();
+        let app = new Vue({
+            el: '#app',
+            data: {
+                newmessage: null,
+                messages: [],
+                typing: false,
+                online: [],
+                name: null,
+                ready: false,
+                info: [],
+                connectionCount: 0
+            },
+            methods: {
+                send() {
+                    socket.emit('chat-message', { message: this.newmessage, user: this.name })
+                    this.messages.push({ message: this.newmessage, type: 0, by: 'Me' })
+                    this.newmessage = null
+                },
+                isTyping() {
+                    socket.emit('typing', this.name)
+                },
+                setName() {
+                    socket.emit('joined', this.name)
+                    this.ready = true
+                }
+            },
+            mounted() {
+                window.onbeforeunload = () => {
+                    socket.emit('leaved', this.name)
+                }
+                socket.on('noOfConnections', (count) => {
+                    this.connectionCount = count
+                })
+            },
+            watch: {
+                newmessage(value) {
+                    value ? socket.emit('typing', this.name) : socket.emit('stoptyping')
+                }
+            },
+            created() {
+                socket.on('chat-message', (data) => {
+                    this.messages.push({ message: data.message, type: 1, by: data.user })
+                    this.typing = false
+                })
+
+                socket.on('typing', (data) => {
+                    console.log(data)
+                    this.typing = data
+                })
+                socket.on('stoptyping', () => {
+                    this.typing = false
+                })
+
+                socket.on('leaved', (name) => {
+                    this.online.splice(this.online.indexOf(name))
+                    this.info.push({ name: name, type: 'Leaved' })
+                    setTimeout(() => {
+                        this.info = []
+                    }, 5000);
+                })
+
+                socket.on('joined', (name) => {
+                    this.online.push(name)
+                    this.info.push({ name: name, type: 'Joined' })
+                    setTimeout(() => {
+                        this.info = []
+                    }, 5000);
+                })
+            }
+        });
+    </script>
+</body>
+
+</html>
