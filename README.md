@@ -23,3 +23,6 @@ io.on('connection', function(client){
 });
 server.listen(3000);
 ```
+
+node index.js in cmd
+go to http://localhost:1997
